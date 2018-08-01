@@ -34,23 +34,36 @@ ifeq ($(shell uname -s),SunOS)
 	NODE_PREBUILT_IMAGE=18b094b0-eb01-11e5-80c1-175dac7ddf02
 endif
 
-include ./tools/mk/Makefile.defs
+# XXX timf comment out during eng development
+#REQUIRE_ENG := $(shell git submodule update --init deps/eng)
+
+include ./deps/eng/tools/mk/Makefile.defs
+TOP ?= $(error Unable to access eng.git submodule Makefiles.)
+
 ifeq ($(shell uname -s),SunOS)
-	include ./tools/mk/Makefile.node_prebuilt.defs
+	include ./deps/eng/tools/mk/Makefile.node_prebuilt.defs
+	include ./deps/eng/tools/mk/Makefile.agent_prebuilt.defs
 else
-	include ./tools/mk/Makefile.node.defs
+	include ./deps/eng/tools/mk/Makefile.node.defs
 endif
-include ./tools/mk/Makefile.smf.defs
+include ./deps/eng/tools/mk/Makefile.smf.defs
 
 ROOT            := $(shell pwd)
 RELEASE_TARBALL := $(SERVICE_NAME)-pkg-$(STAMP).tar.bz2
 RELSTAGEDIR     := /tmp/$(STAMP)
 
+BASE_IMAGE_UUID = 04a48d7d-6bb5-4e83-8c3b-e60a99e0f48f
+BUILDIMAGE_NAME = $(SERVICE_NAME)
+BUILDIMAGE_DESC	= SDC Volumes API
+BUILDIMAGE_PKG	= $(PWD)/$(RELEASE_TARBALL)
+BUILDIMAGE_STAGEDIR = /tmp/buildimage-$(SERVICE_NAME)-$(STAMP)
+AGENTS		= amon config registrar
+
 #
 # Repo-specific targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(TAP) $(REPO_DEPS)
+all: $(SMF_MANIFESTS) | $(TAP) sdc-scripts
 	$(NPM) rebuild
 
 $(TAP): | $(NPM_EXEC)
@@ -98,14 +111,15 @@ test-coal:
 	./tools/rsync-to coal
 	ssh $(COAL) "/opt/smartdc/bin/sdc-login -l ${SERVICE_NAME} /opt/smartdc/${SERVICE_NAME}/test/runtests"
 
-include ./tools/mk/Makefile.deps
+include ./deps/eng/tools/mk/Makefile.deps
 ifeq ($(shell uname -s),SunOS)
-	include ./tools/mk/Makefile.node_prebuilt.targ
+	include ./deps/eng/tools/mk/Makefile.node_prebuilt.targ
+	include ./deps/eng/tools/mk/Makefile.agent_prebuilt.targ
 else
-	include ./tools/mk/Makefile.node.targ
+	include ./deps/eng/tools/mk/Makefile.node.targ
 endif
-include ./tools/mk/Makefile.smf.targ
-include ./tools/mk/Makefile.targ
+include ./deps/eng/tools/mk/Makefile.smf.targ
+include ./deps/eng/tools/mk/Makefile.targ
 
 .PHONY: setup-coal
 setup-coal:
@@ -117,3 +131,5 @@ test-integration-in-coal:
 
 .PHONY: test
 test: test-integration-in-coal
+
+sdc-scripts: deps/sdc-scripts/.git
