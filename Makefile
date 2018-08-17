@@ -23,8 +23,8 @@ JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE	 = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
-SERVICE_NAME     = volapi
-SMF_MANIFESTS_IN = smf/manifests/$(SERVICE_NAME)-server.xml.in smf/manifests/$(SERVICE_NAME)-updater.xml.in
+NAME = volapi
+SMF_MANIFESTS_IN = smf/manifests/$(NAME)-server.xml.in smf/manifests/$(NAME)-updater.xml.in
 
 NODE_PREBUILT_VERSION=v4.9.0
 
@@ -49,11 +49,11 @@ endif
 include ./deps/eng/tools/mk/Makefile.smf.defs
 
 ROOT            := $(shell pwd)
-RELEASE_TARBALL := $(SERVICE_NAME)-pkg-$(STAMP).tar.bz2
+RELEASE_TARBALL := $(NAME)-pkg-$(STAMP).tar.bz2
 RELSTAGEDIR     := /tmp/$(STAMP)
 
 BASE_IMAGE_UUID = 04a48d7d-6bb5-4e83-8c3b-e60a99e0f48f
-BUILDIMAGE_NAME = $(SERVICE_NAME)
+BUILDIMAGE_NAME = $(NAME)
 BUILDIMAGE_DESC	= SDC Volumes API
 BUILDIMAGE_PKG	= $(PWD)/$(RELEASE_TARBALL)
 AGENTS		= amon config registrar
@@ -73,10 +73,10 @@ CLEAN_FILES += $(TAP) ./node_modules/tap
 .PHONY: release
 release: all deps docs $(SMF_MANIFESTS)
 	@echo "Building $(RELEASE_TARBALL)"
-	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(SERVICE_NAME)/build
+	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/build
 	@mkdir -p $(RELSTAGEDIR)/site
 	@touch $(RELSTAGEDIR)/site/.do-not-delete-me
-	cp -PR $(NODE_INSTALL) $(RELSTAGEDIR)/root/opt/smartdc/$(SERVICE_NAME)/build/node
+	cp -PR $(NODE_INSTALL) $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/build/node
 	cp -r $(ROOT)/lib \
     $(ROOT)/server.js \
     $(ROOT)/volapi-updater.js \
@@ -87,7 +87,7 @@ release: all deps docs $(SMF_MANIFESTS)
     $(ROOT)/smf \
     $(ROOT)/test \
     $(ROOT)/tools \
-    $(RELSTAGEDIR)/root/opt/smartdc/$(SERVICE_NAME)/
+    $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/boot
 	cp -R $(ROOT)/deps/sdc-scripts/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
 	cp -R $(ROOT)/boot/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
@@ -101,14 +101,14 @@ publish: release
     echo "error: 'BITS_DIR' must be set for 'publish' target"; \
     exit 1; \
   fi
-	mkdir -p $(BITS_DIR)/$(SERVICE_NAME)
-	cp $(ROOT)/$(RELEASE_TARBALL) $(BITS_DIR)/$(SERVICE_NAME)/$(RELEASE_TARBALL)
+	mkdir -p $(BITS_DIR)/$(NAME)
+	cp $(ROOT)/$(RELEASE_TARBALL) $(BITS_DIR)/$(NAME)/$(RELEASE_TARBALL)
 
 .PHONY: test-coal
 COAL=root@10.99.99.7
 test-coal:
 	./tools/rsync-to coal
-	ssh $(COAL) "/opt/smartdc/bin/sdc-login -l ${SERVICE_NAME} /opt/smartdc/${SERVICE_NAME}/test/runtests"
+	ssh $(COAL) "/opt/smartdc/bin/sdc-login -l ${NAME} /opt/smartdc/${NAME}/test/runtests"
 
 include ./deps/eng/tools/mk/Makefile.deps
 ifeq ($(shell uname -s),SunOS)
