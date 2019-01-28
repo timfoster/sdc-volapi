@@ -10,4 +10,4 @@ cscope.po.out
 cscope.out
 smf/manifests/volapi-server.xml
 smf/manifests/volapi-updater.xml
-volapi-pkg-*.tar.bz2
+volapi-pkg-*.tar.gz
